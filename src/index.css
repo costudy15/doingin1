@@ -1,0 +1,11 @@
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", system-ui, sans-serif;
+  background: #f4f5fa;
+  color: #1f2430;
+  -webkit-tap-highlight-color: transparent;
+}
+button, input, textarea { font-family: inherit; }
+img { max-width: 100%; }
