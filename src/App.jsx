@@ -424,6 +424,7 @@ function ProblemView({ user, wsId, problemId, worksheets, onBack, onLogQuestion,
   const [chat, setChat] = useState([])           // [{role,text}]
   const [question, setQuestion] = useState('')
   const [asking, setAsking] = useState(false)
+  const [showSolution, setShowSolution] = useState(false)
 
   // 영역선택
   const [selecting, setSelecting] = useState(false)
@@ -442,7 +443,7 @@ function ProblemView({ user, wsId, problemId, worksheets, onBack, onLogQuestion,
     setLoading(true)
     ;(async () => {
       const { data } = await supabase.from('problems').select('*').eq('worksheet', wsId).eq('id', problemId).maybeSingle()
-      if (live) { setProb(rowToProblem(data) || { id: problemId, worksheet: wsId, problemImg: '', solutions: [], points: '', videoUrl: '' }); setSolIdx(0); setLoading(false) }
+      if (live) { setProb(rowToProblem(data) || { id: problemId, worksheet: wsId, problemImg: '', solutions: [], points: '', videoUrl: '' }); setSolIdx(0); setShowSolution(false); setLoading(false) }
     })()
     return () => { live = false }
   }, [wsId, problemId])
@@ -545,13 +546,26 @@ function ProblemView({ user, wsId, problemId, worksheets, onBack, onLogQuestion,
         ? <div className="cs-imgcard"><div className="cs-imgcard-label">문제</div><img src={prob.problemImg} alt="문제" /></div>
         : <div className="cs-imgcard cs-imgcard-empty">문제 이미지가 아직 등록되지 않았어요.</div>}
 
-      {solutions.length > 0 && (
+      {solutions.length > 0 && !showSolution && (
+        <div className="cs-reveal">
+          <div className="cs-reveal-title">✍️ 먼저 스스로 풀어보세요</div>
+          <div className="cs-reveal-sub">충분히 풀어본 뒤 손풀이를 확인하면 훨씬 오래 기억에 남아요.</div>
+          <button className="cs-reveal-btn" onClick={() => setShowSolution(true)}>손풀이 보기</button>
+        </div>
+      )}
+
+      {solutions.length > 0 && showSolution && (
         <div className="cs-imgcard">
           <div className="cs-imgcard-label">
             손풀이
-            <button className={`cs-region-toggle ${selecting ? 'on' : ''}`} onClick={() => { setSelecting(s => !s); setSel(null) }}>
-              {selecting ? '취소' : '🔲 부분 선택'}
-            </button>
+            <span className="cs-label-actions">
+              <button className={`cs-region-toggle ${selecting ? 'on' : ''}`} onClick={() => { setSelecting(s => !s); setSel(null) }}>
+                {selecting ? '취소' : '🔲 부분 선택'}
+              </button>
+              <button className="cs-region-toggle" onClick={() => { setShowSolution(false); setSelecting(false); setSel(null) }}>
+                숨기기
+              </button>
+            </span>
           </div>
           {solutions.length > 1 && (
             <div className="cs-soltabs">
@@ -915,6 +929,11 @@ function StyleBlock() {
     .cs-imgcard-label{ font-weight:800; font-size:13px; color:var(--muted); margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; }
     .cs-imgcard img{ width:100%; border-radius:9px; display:block; }
     .cs-imgcard-empty{ color:var(--muted); text-align:center; padding:26px; font-size:14px; }
+    .cs-label-actions{ display:flex; gap:8px; }
+    .cs-reveal{ background:#fff; border:1px dashed #c9cee0; border-radius:14px; padding:22px 16px; margin-bottom:12px; text-align:center; }
+    .cs-reveal-title{ font-weight:800; font-size:16px; color:var(--text); }
+    .cs-reveal-sub{ color:var(--muted); font-size:13px; margin:6px 0 14px; }
+    .cs-reveal-btn{ border:0; background:var(--navy); color:#fff; border-radius:11px; padding:12px 24px; font-weight:800; font-size:15px; cursor:pointer; }
 
     .cs-region-toggle{ border:1px solid var(--line); background:#fff; border-radius:8px; padding:5px 9px; font-size:12px; font-weight:700; cursor:pointer; color:var(--navy); }
     .cs-region-toggle.on{ background:var(--navy); color:#fff; }
